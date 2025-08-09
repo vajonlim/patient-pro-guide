@@ -5,6 +5,7 @@ import DailyCheckIn, { type CheckIn } from "@/components/meditrack/DailyCheckIn"
 import StreakCard from "@/components/meditrack/StreakCard";
 import ReportComposer from "@/components/meditrack/ReportComposer";
 import { Helmet } from "react-helmet-async";
+import MobileShell from "@/components/meditrack/MobileShell";
 
 const LS_KEYS = {
   meds: "meditrack_meds",
@@ -28,14 +29,22 @@ const Index = () => {
     localStorage.setItem(LS_KEYS.checkins, JSON.stringify(checkIns));
   }, [checkIns]);
 
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const scrollToUpload = () => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const uploadRef = useRef<HTMLDivElement>(null);
+  const checkinRef = useRef<HTMLDivElement>(null);
+  const reportsRef = useRef<HTMLDivElement>(null);
+  const scrollTo = (id: string) => {
+    const map: Record<string, HTMLDivElement | null> = {
+      "upload": uploadRef.current,
+      "daily-checkin": checkinRef.current,
+      "reports": reportsRef.current,
+    };
+    map[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const todayKey = useMemo(() => new Date().toISOString().slice(0,10), []);
   const todayAlreadyDone = checkIns.some((c) => c.date === todayKey);
 
   const streak = useMemo(() => {
-    // Count consecutive days up to today
     let count = 0;
     const days = new Set(checkIns.map((c) => c.date));
     const d = new Date();
@@ -47,7 +56,6 @@ const Index = () => {
   }, [checkIns]);
 
   const completionRate = useMemo(() => {
-    // last 14 days percentage
     const d = new Date();
     const keys: string[] = [];
     for (let i = 0; i < 14; i++) { keys.push(d.toISOString().slice(0,10)); d.setDate(d.getDate() - 1); }
@@ -62,28 +70,34 @@ const Index = () => {
   });
 
   return (
-    <main className="min-h-screen container py-10 space-y-10">
+    <MobileShell onGo={scrollTo}>
       <Helmet>
         <title>MediTrack AI — Smart medication reminders</title>
         <meta name="description" content="Track medications, get reminders, complete daily check-ins, and share AI summaries with doctors." />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/'} />
       </Helmet>
 
-      <Hero onCTAClick={scrollToUpload} />
+      <div className="space-y-8">
+        <Hero onCTAClick={() => scrollTo('upload')} />
 
-      <div ref={sectionRef} className="grid gap-6 md:grid-cols-2">
-        <UploadPrescription onExtract={setMeds} />
-        <StreakCard streak={streak} completionRate={completionRate} />
+        <div ref={uploadRef} id="upload" className="grid gap-6 md:grid-cols-2 animate-enter">
+          <UploadPrescription onExtract={setMeds} />
+          <StreakCard streak={streak} completionRate={completionRate} />
+        </div>
+
+        <div ref={checkinRef} id="daily-checkin" className="animate-enter">
+          <DailyCheckIn onSubmit={addCheckIn} todayAlreadyDone={todayAlreadyDone} />
+        </div>
+
+        <div ref={reportsRef} id="reports" className="animate-enter">
+          <ReportComposer meds={meds} checkIns={checkIns} />
+        </div>
+
+        <footer className="py-6 text-center text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} MediTrack. Be kind to yourself — you’re building healthy habits.</p>
+        </footer>
       </div>
-
-      <DailyCheckIn onSubmit={addCheckIn} todayAlreadyDone={todayAlreadyDone} />
-
-      <ReportComposer meds={meds} checkIns={checkIns} />
-
-      <footer className="py-10 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} MediTrack. Be kind to yourself — you’re building healthy habits.</p>
-      </footer>
-    </main>
+    </MobileShell>
   );
 };
 

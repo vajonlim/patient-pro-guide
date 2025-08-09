@@ -126,24 +126,17 @@ All colors MUST be HSL.
     background-clip: text;
     color: transparent;
   }
-  .card-elevated {
-    box-shadow: var(--shadow-soft);
-  }
-  .btn-hero {
-    background-image: var(--gradient-primary);
-    color: hsl(var(--brand-foreground));
-    box-shadow: var(--shadow-soft);
-    border: 1px solid hsl(var(--border));
-  }
-  .btn-hero:hover {
-    transform: translateY(-2px);
-    filter: saturate(1.05);
-  }
-  .pointer-spotlight {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(600px circle at var(--x,50%) var(--y,10%), hsl(var(--brand) / 0.25), transparent 40%);
-    transition: opacity .3s ease;
-  }
+  .card-elevated { box-shadow: var(--shadow-soft); }
+  .btn-hero { background-image: var(--gradient-primary); color: hsl(var(--brand-foreground)); box-shadow: var(--shadow-soft); border: 1px solid hsl(var(--border)); }
+  .btn-hero:hover { transform: translateY(-2px); filter: saturate(1.05); }
+  .pointer-spotlight { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(600px circle at var(--x,50%) var(--y,10%), hsl(var(--brand) / 0.25), transparent 40%); transition: opacity .3s ease; }
+
+  /* Animation helpers */
+  .hover-scale { transition: transform 200ms; }
+  .hover-scale:hover { transform: scale(1.05); }
+  .story-link { position: relative; display: inline-block; }
+  .story-link::after { content: ""; position: absolute; width: 100%; height: 2px; left: 0; bottom: 0; background: hsl(var(--primary)); transform: scaleX(0); transform-origin: bottom right; transition: transform .3s; }
+  .story-link:hover::after { transform: scaleX(1); transform-origin: bottom left; }
+  .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
+  .safe-top { padding-top: env(safe-area-inset-top); }
 }
